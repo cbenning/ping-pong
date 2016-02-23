@@ -1,14 +1,17 @@
-
 #include<arpa/inet.h>
 #include<sys/socket.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
+#include <iostream>
 #include<unistd.h>
 #include "server.h"
 
+using namespace std;
 
-PingServer::PingServer( int newPort ) {
-    port = newPort;
+PingServer::PingServer( int new_port, char* new_message ) {
+    port = new_port;
+    message = new_message;
 }
 
 void PingServer::start(void) {
@@ -41,40 +44,27 @@ void PingServer::start(void) {
 
     listen(sockfd,BACKLOG);
 
+    printf("Listening\n");
+    tmpsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t*)&socklen);
+    if (tmpsockfd < 0) {
+        perror("Failed to accept connection");
+        exit(1);
+    }
+
+    printf("Got one!\n");
+
     while(1) {
 
-        tmpsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t*)&socklen);
-        if (tmpsockfd < 0) {
-            perror("Failed to accept connection");
-            exit(1);
-        }
-
-        n = read(tmpsockfd,msgbuf,MAXMSGSIZE);
+        n = read(tmpsockfd,msgbuf,MAX_MSG_LENGTH);
 
         if( n < 0 ) {
             perror("Failed to read from socket");
             exit(1); //TODO - cleanup 
         }
 
-
-        snprintf(msgbuf,n,"%s",msgbuf);
-        n = write(tmpsockfd,msgbuf,n);
-
-        close(tmpsockfd);
-
-
-       // pid = fork();
-
-       // if(pid == 0){
-       //     handle(tmpsockfd);
-       //     exit(0);
-       // }
-       // if(pid < 0){
-       //     perror("Failed to fork");
-       //     exit(1);
-       // }
+        cout << msgbuf << "\n";
+        n = write(tmpsockfd,message,strlen(message));
 
     }
-
 }
 
