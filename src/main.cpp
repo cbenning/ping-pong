@@ -56,7 +56,7 @@ int main( int argc, char **argv )
 
     //Require exactly one of the two flags
     if((client_flag && server_flag) || (!client_flag && !server_flag)) {
-        cout << "Please select either client or server mode (-s/-c)" << "\n";
+        printf("Please select either client or server mode (-s/-c)\n");
         exit(1);
     }
 
