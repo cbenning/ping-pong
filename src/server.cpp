@@ -1,10 +1,16 @@
-#include<arpa/inet.h>
-#include<sys/socket.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <iostream>
-#include<unistd.h>
+#include <unistd.h>
+
+#ifndef MESSAGE_H
+#define MESSAGE_H 
+#include "message.h"
+#endif
+
 #include "server.h"
 
 using namespace std;
@@ -26,7 +32,7 @@ void PingServer::start(void) {
     srv_addr.sin_addr.s_addr = INADDR_ANY;
     srv_addr.sin_port = htons(port);
 
-    //TODO
+    //Set socket as reusable
     reuseaddr = 1;
     if (setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&reuseaddr,sizeof(reuseaddr))==-1) {
         perror("Failed to set socket options");
@@ -44,26 +50,38 @@ void PingServer::start(void) {
 
     listen(sockfd,BACKLOG);
 
-    printf("Listening\n");
     tmpsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t*)&socklen);
     if (tmpsockfd < 0) {
         perror("Failed to accept connection");
         exit(1);
     }
 
-    printf("Got one!\n");
+    outmsg = new Message;
+    outmsg->index = 0;
+    strncpy(outmsg->message,message,MAXMSGSIZE);
+
+    data = (char*)malloc(PACKETSIZE);
 
     while(1) {
 
-        n = read(tmpsockfd,msgbuf,MAX_MSG_LENGTH);
-
+        //Read
+        n = read(tmpsockfd,data,PACKETSIZE);
         if( n < 0 ) {
             perror("Failed to read from socket");
             exit(1); //TODO - cleanup 
         }
 
-        cout << msgbuf << "\n";
-        n = write(tmpsockfd,message,strlen(message));
+        //Display
+        inmsg = (Message*)data;
+        cout << inmsg->index << ":" << inmsg->message << "\n";
+
+        //Prep outgoing
+        outmsg->index = inmsg->index;
+        strncpy(outmsg->message,message,MAXMSGSIZE);
+
+        //Write
+        data = (char*)outmsg;
+        n = write(tmpsockfd,data,PACKETSIZE);
 
     }
 }

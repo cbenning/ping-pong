@@ -3,9 +3,12 @@ class PingServer
 {
     private:
         enum {BACKLOG=5};
-        enum {MAX_MSG_LENGTH=265};
-        char msgbuf[MAX_MSG_LENGTH];
-        char* message;
+        //enum {MAXMSGSIZE=256};
+        char msgbuf[MAXMSGSIZE];
+        char* message = NULL;
+        Message *outmsg, *inmsg;
+        //char data[PACKETSIZE];
+        char *data;
         struct sockaddr_in srv_addr, cli_addr;
         int  sockfd, tmpsockfd, port, n, reuseaddr, socklen;
 

@@ -1,10 +1,16 @@
-#include<arpa/inet.h>
-#include<sys/socket.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <iostream>
-#include<unistd.h>
+#include <unistd.h>
+
+#ifndef MESSAGE_H
+#define MESSAGE_H
+#include "message.h"
+#endif
+
 #include "client.h"
 
 using namespace std;
@@ -28,7 +34,7 @@ void PingClient::start(void) {
     srv_addr.sin_addr.s_addr = inet_addr(target_host);
     srv_addr.sin_port = htons(port);
 
-    //TODO
+    //Set socket as reusable
     reuseaddr = 1;
     if(setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&reuseaddr,sizeof(reuseaddr))==-1) {
         perror("Failed to set socket options");
@@ -43,22 +49,38 @@ void PingClient::start(void) {
         exit(1);
     }
 
+    index = 0;
+    outmsg = new Message;
+
+    data = (char*)malloc(PACKETSIZE);
+
     while(1) {
 
-        printf("Sending\n");
-        n = send(sockfd , message , strlen(message), 0);
+        //Prep outgoing
+        outmsg->index = index;
+        strncpy(outmsg->message,message,MAXMSGSIZE);
+
+        //Write
+        data = (char*)outmsg;
+        n = send(sockfd, data, PACKETSIZE, 0);
         if(n<0){
             perror("Failed to send data to remote host");
             exit(1);
         }
 
-        n = recv(sockfd,msgbuf,MAX_MSG_LENGTH, 0);
+        //Read
+        n = recv(sockfd,data,PACKETSIZE, 0);
         if(n<0) {
             perror("Failed to send data to remote host");
             exit(1);
         }
 
-        cout << msgbuf << "\n";
+        //Display
+        inmsg = (Message*)data;
+        cout << inmsg->index << ":" << inmsg->message << "\n";
+
+        //Increment and sleep
+        index++;
         sleep(freq);
     }
 }

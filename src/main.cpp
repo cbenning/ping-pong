@@ -4,6 +4,8 @@
 #include "server.cpp"
 #include "client.cpp"
 
+using namespace std;
+
 int main( int argc, char **argv )
 {
 
@@ -35,8 +37,10 @@ int main( int argc, char **argv )
       case '?':
         return 1;
     }
-    printf("client_flag = %d, server_flag = %d, target_host = %s, message = %s, port = %d, freq_seconds = %d\n",
-          client_flag, server_flag, target_host, message, port, freq_seconds);
+
+    //Debug for cmdline input
+    //printf("client_flag = %d, server_flag = %d, target_host = %s, message = %s, port = %d, freq_seconds = %d\n",
+    //      client_flag, server_flag, target_host, message, port, freq_seconds);
 
     //Require exactly one of the two flags
     if((client_flag && server_flag) || (!client_flag && !server_flag)) {
