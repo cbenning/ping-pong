@@ -24,12 +24,12 @@ PingClient::PingClient( char* new_target_host, int new_port, char* new_message, 
 
 void PingClient::start(void) {
 
+    //Configure socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
       perror("Failed to open socket");
       exit(1);
     }
-
     srv_addr.sin_family = AF_INET;
     srv_addr.sin_addr.s_addr = inet_addr(target_host);
     srv_addr.sin_port = htons(port);
@@ -44,14 +44,15 @@ void PingClient::start(void) {
     //Get the addr size
     socklen = sizeof(struct sockaddr_in);
 
+    //Connect to server
     if(connect(sockfd,(struct sockaddr *)&srv_addr, socklen) < 0) {
         perror("Failed to connect to remote host");
         exit(1);
     }
 
+    //Prep buffer space
     index = 0;
     outmsg = new Message;
-
     data = (char*)malloc(PACKETSIZE);
 
     while(1) {

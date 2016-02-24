@@ -15,19 +15,25 @@
 
 using namespace std;
 
+/**
+ * Constructor
+ */
 PingServer::PingServer( int new_port, char* new_message ) {
     port = new_port;
     message = new_message;
 }
 
+/**
+ * Start the server - Blocking
+ */
 void PingServer::start(void) {
 
+    //Configure socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
       perror("Failed to open socket");
       exit(1);
     }
-
     srv_addr.sin_family = AF_INET;
     srv_addr.sin_addr.s_addr = INADDR_ANY;
     srv_addr.sin_port = htons(port);
@@ -42,24 +48,23 @@ void PingServer::start(void) {
     //Get the addr size
     socklen = sizeof(struct sockaddr_in);
 
+    //Bind to socket
     int bind_res = bind(sockfd, (struct sockaddr *)&srv_addr, (socklen_t)socklen);
     if(bind_res < 0) {
         perror("Failed to bind");
         exit(1);
     }
-
     listen(sockfd,BACKLOG);
 
+    //Block for client connection
     tmpsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t*)&socklen);
     if (tmpsockfd < 0) {
         perror("Failed to accept connection");
         exit(1);
     }
 
+    //Prep buffer space
     outmsg = new Message;
-    outmsg->index = 0;
-    strncpy(outmsg->message,message,MAXMSGSIZE);
-
     data = (char*)malloc(PACKETSIZE);
 
     while(1) {

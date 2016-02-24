@@ -4,21 +4,32 @@
 #include "server.cpp"
 #include "client.cpp"
 
+#ifndef MESSAGE_H
+#define MESSAGE_H
+#include "message.h"
+#endif
+
 using namespace std;
+
+#define MIN_PORT 1024
+#define MAX_PORT USHRT_MAX
 
 int main( int argc, char **argv )
 {
-
-    enum {MIN_MSG_LENGTH=1};
-    enum {MAX_MSG_LENGTH=255};
-    enum {MIN_PORT=1024};
-    enum {MAX_PORT=USHRT_MAX};
     int server_flag = 0 ,client_flag = 0, port = 0, freq_seconds = 1, c = 0;
     char *target_host = NULL,*message = NULL;
 
-    while ((c = getopt (argc, argv, "sct:p:m:")) != -1)
-    switch (c)
-    {
+    const char *help_str =
+        "Ping-Pong commndline tool. Usage: \n"
+        "\t-s server mode\n"
+        "\t-c client mode\n"
+        "\t-t <target host> (client mode only)\n"
+        "\t-p <port> (between 1024 and 65535)\n"
+        "\t-m <message> (between 1 and 255 chars in length)\n"
+        "\t-h display this help message\n";
+
+    while ((c = getopt (argc, argv, "scht:p:m:")) != -1)
+    switch (c) {
       case 's':
         server_flag = 1;
         break;
@@ -34,23 +45,24 @@ int main( int argc, char **argv )
       case 'p':
         port = atoi(optarg);
         break;
+      case 'h':
+        cout << help_str;
       case '?':
         return 1;
     }
-
     //Debug for cmdline input
     //printf("client_flag = %d, server_flag = %d, target_host = %s, message = %s, port = %d, freq_seconds = %d\n",
     //      client_flag, server_flag, target_host, message, port, freq_seconds);
 
     //Require exactly one of the two flags
     if((client_flag && server_flag) || (!client_flag && !server_flag)) {
-        printf("Please select either client or server mode (-s/-c)\n");
+        cout << "Please select either client or server mode (-s/-c)" << "\n";
         exit(1);
     }
 
     //Require message
-    if(message == NULL || strlen(message)<MIN_MSG_LENGTH || strlen(message)>MAX_MSG_LENGTH){
-        printf("Please provide a message of length: %d - %d\n",MIN_MSG_LENGTH,MAX_MSG_LENGTH);
+    if(message == NULL || strlen(message)<MINMSGSIZE|| strlen(message)>MAXMSGSIZE){
+        printf("Please provide a message of length: %d - %d\n",MINMSGSIZE,MAXMSGSIZE);
         exit(1);
     }
 
